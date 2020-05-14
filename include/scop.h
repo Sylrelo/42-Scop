@@ -122,6 +122,13 @@ void		mat_perspective(mat4f out, float fov, float aspect, float near_plane, floa
 void			mat_scale(mat4f in_out, float scale_x, float scale_y, float scale_z);
 
 
+/*
+** Matrices
+*/
+void		mat4_rotate(mat4f result, t_vec3f rot);
+void		mat4_scale(mat4f result, t_vec3f scale);
+void		mat4_translate(mat4f result, t_vec3f pos);
+void		mat4_mult(mat4f result, mat4f a, mat4f b);
 
 /* 
 ** Object Parsing

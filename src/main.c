@@ -193,31 +193,37 @@ int main()
 	GLuint persp = glGetUniformLocation(e->program, "persp");
 	GLuint Model = glGetUniformLocation(e->program, "Model");
 	
-	mat4f lala;
+	mat4f mat_persp;
 	mat4f matmodel;
 	mat_init(matmodel);
 
-	mat_perspective(lala, 1.0472, 1600.0f / 900.0f, 0.0f, 1000.0f);
+	mat_perspective(mat_persp, 1.0472, 1600.0f / 900.0f, 0.00001f, 1000.0f);
 	
-	glUniformMatrix4fv(persp, 1, GL_FALSE, lala[0]);
+	glUniformMatrix4fv(persp, 1, GL_FALSE, mat_persp[0]);
 	glUniformMatrix4fv(Model, 1, GL_FALSE, matmodel[0]);
 
 	ogl_options();
+
+
+	mat4f	mat4_model;
+	mat4f	mat_trans;
+	mat4f	mat_rot;
+	mat4f	mat_scale;
+
 	while (!glfwWindowShouldClose(e->win))
 	{
 		key_handle(e);
 		glClearColor(0.1f, 0.1f, 0.1f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		mat_init(out);
-		mat4f patate;
 
-		mat_init(patate);
+		mat4_rotate(mat_rot, e->cam_rot);
+		mat4_translate(mat_trans, e->cam_pos);
+		//mat4_scale(mat_scale, (t_vec3f){5, 5, 5});
+		mat4_mult(mat4_model, mat_rot, mat_trans);
+		//mat4_mult(mat4_model, mat4_model, mat_scale);
 
-		mat_rotation(patate, out, e->cam_rot.x, e->cam_rot.y, e->cam_rot.z);
-		mat_scale(out, 6, 6, 6);
-		mat_translate(out, (t_vec3f){e->cam_pos.x, e->cam_pos.y, e->cam_pos.z});
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, out[0]);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, mat4_model[0]);
 
         glBindVertexArray(e->ogl.vao);
         glDrawElements(GL_TRIANGLES, e->nb_vertices / e->nb_data, GL_UNSIGNED_INT, 0);
