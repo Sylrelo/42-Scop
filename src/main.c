@@ -186,7 +186,7 @@ int main()
 
 	mat4f	mvp;
 	mat4f	out;
-	mat_init(mvp);
+	mat4_init(mvp);
 	float a = 0.001;
     glUseProgram(e->program);
 	MatrixID = glGetUniformLocation(e->program, "transform");
@@ -195,9 +195,9 @@ int main()
 	
 	mat4f mat_persp;
 	mat4f matmodel;
-	mat_init(matmodel);
+	mat4_init(matmodel);
 
-	mat_perspective(mat_persp, 1.0472, 1600.0f / 900.0f, 0.00001f, 1000.0f);
+	mat4_perspective(mat_persp, 1.0472, 1600.0f / 900.0f, 0.00001f, 1000.0f);
 	
 	glUniformMatrix4fv(persp, 1, GL_FALSE, mat_persp[0]);
 	glUniformMatrix4fv(Model, 1, GL_FALSE, matmodel[0]);
