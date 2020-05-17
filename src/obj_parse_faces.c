@@ -1,165 +1,106 @@
 #include "scop.h"
 
-typedef enum	e_parse_enum
+void	obj_parse_push_data(t_app *e, t_obj *obj, t_3i index)
 {
-	SINGLE = 2,
-	WITH_NORMAL = 4,
-	WITH_TEXCOORDS = 8,
-	COMPLETE = 16
-}				t_parse_enum;
+	t_vec3f		value_v;
+	t_vec3f		value_vn;
+	t_vec2f		value_vt;
 
-uint8_t		face_type(char *line)
-{
-	int		i;
-	int		c;
-
-	i = 1;
-	c = 0;
-	while (line[++i])
-	{
-		if (line[i] == '/' && line[i + 1] && line[i + 1] == '/')
-			return (WITH_NORMAL);
-		if (line[i] == '/')
-			c++;
-		if (line[i] == ' ')
-			break ;
-	}
-	if (c == 2)
-		return (COMPLETE);
-	if (c == 1)
-		return (WITH_TEXCOORDS);
-	return (SINGLE);
+	value_v = (t_vec3f){0.f, 0.f, 0.f};
+	value_vn = (t_vec3f){0.f, 0.f, 0.f};
+	value_vt = (t_vec2f){0.f, 0.f};
+	if (index.a != -1 && index.a - 1 < obj->nb_vertices)
+		value_v = obj->vertices[index.a - 1];
+	if (index.b != -1 && index.b - 1 < obj->nb_texture_coords)
+		value_vt = obj->texture_coords[index.b - 1];
+	if (index.c != -1 && index.c - 1 < obj->nb_normals)
+		value_vn = obj->normals[index.c - 1];
+	e->vertices[(e->nb_vertices++)] = value_v.x;
+	e->vertices[(e->nb_vertices++)] = value_v.y;
+	e->vertices[(e->nb_vertices++)] = value_v.z;
+	e->vertices[(e->nb_vertices++)] = value_vn.x;
+	e->vertices[(e->nb_vertices++)] = value_vn.y;
+	e->vertices[(e->nb_vertices++)] = value_vn.z;
+	e->vertices[(e->nb_vertices++)] = value_vt.x;
+	e->vertices[(e->nb_vertices++)] = value_vt.y;
+	//e->vertices|(e->nb_vertices++)] = (texture_id & 0xFF << 16) | (face_type & 0xFF << 8);
 }
 
-
-int			chrcount(char *line, char c)
+t_3i	obj_parse_handle_face(char *line)
 {
-	int		i;
-	int		count;
+	const uint8_t	f_type = face_type(line);
+	t_3i			value;
 
-	i = -1;
-	count = 0;
-	while (line[++i])
-		if (line[i] == c)
-			count++;
-	return (count);
+	value = (t_3i){-1, -1, -1};
+	if (f_type & SINGLE)
+		sscanf(line, "%d", &value.a);
+	else if (f_type & WITH_TEXCOORDS)
+		sscanf(line, "%d/%d", &value.a, &value.b);
+	else if (f_type & WITH_NORMAL)
+		sscanf(line, "%d//%d", &value.a, &value.c);
+	else if (f_type & COMPLETE)
+		sscanf(line, "%d/%d/%d", &value.a, &value.b, &value.c);
+	return (value);
 }
 
-int			chrat(char *line, char c)
+void	obj_push_indexes(t_app *e)
 {
 	int		i;
 
 	i = -1;
-	while (line[++i])
-		if (line[i] == c)
-			return (i);
-	return (-1);
-}
-
-void	obj_parse_get_v(t_app *e, t_obj *obj, int index)
-{
-	const t_vec3f value = obj->vertices[index - 1];
-
-	e->vertices[(e->nb_vertices++)] = value.x;
-	e->vertices[(e->nb_vertices++)] = value.y;
-	e->vertices[(e->nb_vertices++)] = value.z;
-}
-
-void	obj_parse_get_vn(t_app *e, t_obj *obj, int index)
-{
-	const t_vec3f value = obj->normals[index - 1];
-
-	e->vertices[(e->nb_vertices++)] = value.x;
-	e->vertices[(e->nb_vertices++)] = value.y;
-	e->vertices[(e->nb_vertices++)] = value.z;
-}
-
-void	obj_parse_get_vt(t_app *e, t_obj *obj, int index)
-{
-	t_vec2f value;
-
-	if (index == -1)
-		value = (t_vec2f) {0, 0};
-	else
-		value = obj->texture_coords[index - 1];
-	e->vertices[(e->nb_vertices++)] = value.x;
-	e->vertices[(e->nb_vertices++)] = value.y;
-}
-
-void	obj_parse_face_complete(t_app *e, t_obj *obj, char *line)
-{
-	t_3i	tmp_v;
-	t_3i	tmp_vt;
-	t_3i	tmp_vn;
-
-	sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d",
-		&tmp_v.a, &tmp_vt.a, &tmp_vn.a,
-		&tmp_v.b, &tmp_vt.b, &tmp_vn.b,
-		&tmp_v.c, &tmp_vt.c, &tmp_vn.c
-	);
-	obj_parse_get_v(e, obj, tmp_v.a);
-	obj_parse_get_vn(e, obj, tmp_vn.a);
-	obj_parse_get_vt(e, obj, tmp_vt.a);
-
-	obj_parse_get_v(e, obj, tmp_v.b);
-	obj_parse_get_vn(e, obj, tmp_vn.b);
-	obj_parse_get_vt(e, obj, tmp_vt.b);
-	
-	obj_parse_get_v(e, obj, tmp_v.c);
-	obj_parse_get_vn(e, obj, tmp_vn.c);
-	obj_parse_get_vt(e, obj, tmp_vt.c);
-
-	e->indexes[e->nb_indexes] = e->nb_indexes;
-	e->nb_indexes++;
-	e->indexes[e->nb_indexes] = e->nb_indexes;
-	e->nb_indexes++;
-	e->indexes[e->nb_indexes] = e->nb_indexes;
-	e->nb_indexes++;
-}
-
-void	obj_parse_face_with_normals(t_app *e, t_obj *obj, char *line)
-{
-	t_3i	tmp_v;
-	t_3i	tmp_vn;
-
-	int		count = chrcount(line, ' ');
-	if (count > 3)
+	while (++i < 3)
 	{	
-		printf("Not handling not-triangle");
-		return ;
+		e->indexes[e->nb_indexes] = e->nb_indexes;
+		e->nb_indexes++;
 	}
+}
 
-	sscanf(line, "f %d//%d %d//%d %d//%d",
-		&tmp_v.a, &tmp_vn.a,
-		&tmp_v.b, &tmp_vn.b,
-		&tmp_v.c, &tmp_vn.c
-	);
-	obj_parse_get_v(e, obj, tmp_v.a);
-	obj_parse_get_vn(e, obj, tmp_vn.a);
-	obj_parse_get_vt(e, obj, -1);
+void	obj_parse_face_triangulate(t_app *e, t_obj *obj, int count, char *line)
+{
+	char		*token;
+	t_3i		*data;
+	int			i;
+	int			base_index;
 
-	obj_parse_get_v(e, obj, tmp_v.b);
-	obj_parse_get_vn(e, obj, tmp_vn.b);
-	obj_parse_get_vt(e, obj, -1);
-
-	obj_parse_get_v(e, obj, tmp_v.c);
-	obj_parse_get_vn(e, obj, tmp_vn.c);
-	obj_parse_get_vt(e, obj, -1);
-
-	e->indexes[e->nb_indexes] = e->nb_indexes;
-	e->nb_indexes++;
-	e->indexes[e->nb_indexes] = e->nb_indexes;
-	e->nb_indexes++;
-	e->indexes[e->nb_indexes] = e->nb_indexes;
-	e->nb_indexes++;
+	base_index = 0;
+	i = 0;
+	if (!(data = calloc(count, sizeof(t_3i))))
+		return ;
+	token = strtok(line, " ");
+	while(token != NULL && i < count)
+	{
+		data[i] = obj_parse_handle_face(token);
+		i++;
+		token = strtok(NULL, " ");
+	}
+	i = -1;
+	while (++i < count - 2)
+	{
+		obj_parse_push_data(e, obj, data[0]);
+		obj_parse_push_data(e, obj, data[i + 1]);
+		obj_parse_push_data(e, obj, data[i + 2]);
+		obj_push_indexes(e);
+	}
+	free(data);
 }
 
 void	obj_parse_face(t_app *e, t_obj *obj, char *line)
 {
-	const uint8_t type = face_type(line);
+	const int	v_count = chrcount(line, ' ') + 1;
+	char		*token;
+	t_3i		tmp;
 
-	if (type & COMPLETE)
-		obj_parse_face_complete(e, obj, line);
-	else if (type & WITH_NORMAL)
-		obj_parse_face_with_normals(e, obj, line);
+	if (v_count > 3)
+	{
+		obj_parse_face_triangulate(e, obj, v_count, line);
+		return ;
+	}
+	token = strtok(line, " ");
+	while(token != NULL)
+	{
+		tmp = obj_parse_handle_face(token);
+		obj_parse_push_data(e, obj, tmp);
+		token = strtok(NULL, " ");
+	}
+	obj_push_indexes(e);
 }

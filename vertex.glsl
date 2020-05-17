@@ -11,6 +11,16 @@ uniform mat4	transform;
 uniform mat4	persp;
 uniform mat4	Model;
 
+
+float fclampf(float value, float vmin, float vmax)
+{
+   if (value >= vmax)  
+      value = vmax;
+   if (value <= vmin)
+      value = vmin;
+   return (value);
+}
+
 void main()
 {
    gl_Position =   persp * transform * vec4(aPos, 1.0f);
@@ -18,8 +28,9 @@ void main()
    vec3 posLight = vec3(15.0, 10.0, 50.0);
    
 
-   vec3 colorByPos = vec3(aPos.y * 0.4f + 0.4f,
-		aPos.z * 0.1 + aPos.y * 0.4f + 0.1f, 0.2f);
+   vec3 colorByPos = vec3(
+      fclampf(aPos.y * 0.4f + 0.4f, 0, 1),
+		fclampf(aPos.z * 0.1 + aPos.y * 0.4f, 0, 1), 0.2f);
 
    vec3 dir = normalize(posLight - aPos);
    float diff = max(dot(aNormal, dir), 0.0);
@@ -40,7 +51,10 @@ void main()
     // Multiply the color by the illumination level. It will be interpolated across the triangle.
     vec3 result = aColor * diffuse;
    */
-   vertexColor = result;
+
+   vec3 colorByPosq = vec3(aPos.x, aPos.y, aPos.z);
+
+   vertexColor = colorByPos;
    outNormal = aNormal;
    //outPosition = vec3(persp * transform * vec4(aPos, 1.0f));
    outPosition = aPos;

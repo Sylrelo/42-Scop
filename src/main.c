@@ -155,19 +155,22 @@ void set_signal_handler()
 
 void	ogl_options()
 {
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 }
 
-int main()
+int main(int argv, char *argc[])
 {
+
+	//bmp_parse("test.bmp");
 	t_app		*e;
-	
+	(void)argc;
 	e = malloc(sizeof(t_app));
 	set_signal_handler();
 	e->nb_data = 8;
-	open_file(e, "Ressources/untitled5.obj");
+	open_file(e, "Ressources/Eagle1.obj");
+	printf("\n> %d\n> %d\n", e->nb_indexes, e->nb_vertices);
 	_init(e);
 	if (gl3wInit())
 	{

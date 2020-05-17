@@ -26,7 +26,35 @@
 
 typedef GLfloat	mat4f[4][4];
 
-typedef float	mat4[16];
+/*
+** Object parsing utils
+*/
+
+typedef struct	s_obj_parse
+{
+	FILE		*fp;
+	size_t		read;
+	size_t		len;
+	char		*line;
+	short int	percent_current;
+	short int	percent_old;
+	int			nb_v;
+	int			nb_vt;
+	int			nb_vn;
+	int			nb_f;
+	int			nb_mats;
+	off_t		filesize;
+	off_t		readsize;
+	char		*mtl_name;
+}				t_obj_parse;
+
+typedef enum	e_parse_enum
+{
+	SINGLE = 2,
+	WITH_NORMAL = 4,
+	WITH_TEXCOORDS = 8,
+	COMPLETE = 16
+}				t_parse_enum;
 
 typedef enum 	s_bool
 {
@@ -62,6 +90,15 @@ typedef struct	s_vec4f
 	float		w;
 }				t_vec4f;
 
+typedef struct		s_mtl
+{
+	char			*name;
+	char			*texture_file;
+	t_vec3f			color_ambiant;
+	t_vec3f			color_diffuse;
+	t_vec3f			color_specular;
+}					t_mtl;
+
 typedef struct		s_obj
 {
 	t_vec3f		*vertices;
@@ -70,6 +107,8 @@ typedef struct		s_obj
 	int			nb_texture_coords;
 	t_vec3f		*normals;
 	int			nb_normals;
+	t_mtl		*materials;
+	int			nb_mats;
 }					t_obj;
 
 typedef struct	s_ogl
@@ -82,14 +121,16 @@ typedef struct	s_ogl
 
 typedef struct	s_app
 {
-	GLFWwindow	*win;
-	int			program;
+	GLFWwindow		*win;
+	int				program;
 
-	t_vec3f		cam_pos;
-	t_vec3f		cam_rot;
+	t_vec3f			cam_pos;
+	t_vec3f			cam_rot;
 
-	uint8_t		display_mode;
-	t_ogl		ogl;
+	t_vec3f			obj_center;
+	
+	uint8_t			display_mode;
+	t_ogl			ogl;
 
 	int				nb_data;
 	float			*vertices;
@@ -104,31 +145,20 @@ int			create_shader_program();
 
 
 
-void 		mat_init(mat4f out);
-void		mat_translate(mat4f mat, t_vec3f pt);
-
-void		mat4_print(mat4f in);
-
-void			mat_rotx(mat4f mat, double vcos, double vsin);
-void			mat_roty(mat4f mat, double vcos, double vsin);
-void			mat_rotz(mat4f mat, double vcos, double vsin);
-void			mat_mult(mat4f orig, mat4f new);
-
-void			mat_rotation(mat4f in, mat4f out, float radx, float rady, float radz);
-
-
-void		mat_perspective(mat4f out, float fov, float aspect, float near_plane, float far_plane);
-
-void			mat_scale(mat4f in_out, float scale_x, float scale_y, float scale_z);
-
+/*
+** BMP Parser
+*/
+unsigned int	*bmp_parse(char *file);
 
 /*
 ** Matrices
 */
+void 		mat4_init(mat4f out);
 void		mat4_rotate(mat4f result, t_vec3f rot);
 void		mat4_scale(mat4f result, t_vec3f scale);
 void		mat4_translate(mat4f result, t_vec3f pos);
 void		mat4_mult(mat4f result, mat4f a, mat4f b);
+void		mat4_perspective(mat4f out, float fov, float aspect, float near_plane, float far_plane);
 
 /* 
 ** Object Parsing
@@ -136,6 +166,18 @@ void		mat4_mult(mat4f result, mat4f a, mat4f b);
 void		obj_open_file(t_app *e, char *file);
 void		open_file(t_app *e, char *file);
 void		obj_parse_face(t_app *e, t_obj *obj, char *line);
+void 		obj_parse_show_progress(t_obj_parse *buff);
+void 		obj_parse_show_infos(t_obj_parse *buff);
+
+
+/*
+** Utils
+*/
+uint8_t		face_type(char *line);
+int			chrcount(char *line, char c);
+int			chrat(char *line, char c);
+char		*strafterocc(char *line, char c);
+
 
 /*
 ** OpenGL
