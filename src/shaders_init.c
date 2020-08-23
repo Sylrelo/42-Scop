@@ -20,13 +20,14 @@ char *load_glsl_file(char *file, int *size)
 	fseek(fp, 0, SEEK_END);
 	*size = ftell(fp);
 	rewind(fp);
-	if (!(data = calloc(*size, sizeof(char))))
+	if (!(data = calloc(*size + 1, sizeof(char))))
 	{
 		printf("[Shader] Memory allocation failed\n");
 		exit(EXIT_FAILURE);
 	}
-	while ((read = getline(&line, &len, fp)) != -1)
+	while ((read = getline(&line, &len, fp)) != -1) {
 		strcat(data, line);
+	}
 	free(line);
 	return (data);
 }
@@ -49,6 +50,7 @@ int load_shader(char *file, unsigned int type)
 		printf("[Shader] Compilation failed %d\n%s\n", type, log);
 		exit(EXIT_FAILURE);
 	}
+	free(source);
 	return (shader);
 }
 

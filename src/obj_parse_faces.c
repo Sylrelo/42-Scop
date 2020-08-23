@@ -23,6 +23,17 @@ void	obj_parse_push_data(t_app *e, t_obj *obj, t_3i index)
 	e->vertices[(e->nb_vertices++)] = value_vn.z;
 	e->vertices[(e->nb_vertices++)] = value_vt.x;
 	e->vertices[(e->nb_vertices++)] = value_vt.y;
+
+
+	srand(e->nb_vertices);
+	e->vertices[(e->nb_vertices++)] = rgbfloat(rand() % 255, rand() % 255, rand() % 255);
+	e->vertices[(e->nb_vertices++)] = 0;
+
+	/*e->vertices[(e->nb_vertices++)] = 0;
+	e->vertices[(e->nb_vertices++)] = 155	;
+	e->vertices[(e->nb_vertices++)] = 255;
+	e->vertices[(e->nb_vertices++)] = 255;
+	*/
 	//e->vertices|(e->nb_vertices++)] = (texture_id & 0xFF << 16) | (face_type & 0xFF << 8);
 }
 

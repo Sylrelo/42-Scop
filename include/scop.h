@@ -178,6 +178,7 @@ int			chrcount(char *line, char c);
 int			chrat(char *line, char c);
 char		*strafterocc(char *line, char c);
 
+float		rgbfloat(float r, float g, float b);
 
 /*
 ** OpenGL

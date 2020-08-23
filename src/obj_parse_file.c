@@ -13,6 +13,7 @@ static void		prepare(t_obj_parse *buff)
 	buff->percent_old = -1;
 	int		nb;
 	char	*ptr_mtl;
+	char	btest[256];
 
 	while ((buff->read = getline(&buff->line, &buff->len, buff->fp)) != -1)
 	{
@@ -28,13 +29,15 @@ static void		prepare(t_obj_parse *buff)
 			buff->nb_f += chrcount(buff->line, ' ') - 2;
 		else if (buff->line[0] == 'm' && strstr(buff->line, "mtllib ") != NULL)
 		{
-			ptr_mtl = strafterocc(buff->line, ' ');
-			if (!(buff->mtl_name = calloc(strlen(ptr_mtl), sizeof(char))))
+			memset(btest, '\0', 256);
+			memcpy(btest, &buff->line[7], strlen(buff->line) - 8);
+			if (!(buff->mtl_name = calloc(strlen(btest), sizeof(char))))
 			{	
 				printf("\n[Parsing] MTL File name calloc failed\n");
 				continue ;
 			}
-			strcpy(buff->mtl_name, ptr_mtl);
+			else
+				memcpy(btest, btest, strlen(btest));
 		}
 		else if (buff->line[0] == 'u' && strstr(buff->line, "usemtl ") != NULL)
 		{
@@ -47,17 +50,17 @@ static void		prepare(t_obj_parse *buff)
 
 static int		allocate_arrays(t_app *e, t_obj *obj, t_obj_parse *buff)
 {
-	if (!(e->vertices = malloc(((buff->nb_f * 3) * 8) * sizeof(float))))
+	if (!(e->vertices = calloc(((buff->nb_f * 3) * 11), sizeof(float))))
 		return (false);
-	if (!(e->indexes = malloc((buff->nb_f * 3) * sizeof(unsigned int))))
+	if (!(e->indexes = calloc((buff->nb_f * 3), sizeof(unsigned int))))
 		return (false);
-	if (!(obj->vertices = malloc(sizeof(t_vec3f) * buff->nb_v)))
+	if (!(obj->vertices = calloc(sizeof(t_vec3f), buff->nb_v)))
 		return (false);
-	if (!(obj->texture_coords = malloc(sizeof(t_vec2f) * buff->nb_vt)))
+	if (!(obj->texture_coords = calloc(sizeof(t_vec2f), buff->nb_vt)))
 		return (false);
-	if (!(obj->normals = malloc(sizeof(t_vec3f) * buff->nb_vn)))
+	if (!(obj->normals = calloc(sizeof(t_vec3f), buff->nb_vn)))
 		return (false);
-	if (!(obj->materials = malloc(sizeof(t_mtl) * buff->nb_mats)))
+	if (!(obj->materials = calloc(sizeof(t_mtl), buff->nb_mats)))
 		return (false);
 	obj->nb_vertices = 0;
 	obj->nb_normals = 0;
@@ -71,7 +74,6 @@ static int		allocate_arrays(t_app *e, t_obj *obj, t_obj_parse *buff)
 static void		fill_arrays(t_app *e, t_obj *obj, t_obj_parse *buff)
 {
 	t_vec3f		tmp;
-	char		*stmp;
 
 	buff->percent_old = -1;
 	buff->readsize = 0;
@@ -86,7 +88,6 @@ static void		fill_arrays(t_app *e, t_obj *obj, t_obj_parse *buff)
 			obj->texture_coords[obj->nb_texture_coords++] = (t_vec2f){tmp.x, tmp.y};
 		else if (buff->line[0] == 'f')
 		{	
-			stmp = strdup(buff->line);			
 			obj_parse_face(e, obj, buff->line + 2);
 		}
 		obj_parse_show_progress(buff);

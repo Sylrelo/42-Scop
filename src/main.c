@@ -7,22 +7,22 @@ void	key_handle(t_app *e)
 		glfwSetWindowShouldClose(e->win, GL_TRUE);
 
 	if (glfwGetKey(e->win, GLFW_KEY_W) == GLFW_PRESS ? 1 : 0)
-		e->cam_pos.z += .5f;
+		e->cam_pos.z += 0.5f;
 
 	if (glfwGetKey(e->win, GLFW_KEY_S) == GLFW_PRESS ? 1 : 0)
-		e->cam_pos.z -= .5f;
+		e->cam_pos.z -= 0.5f;
 
 	if (glfwGetKey(e->win, GLFW_KEY_A) == GLFW_PRESS ? 1 : 0)
-		e->cam_pos.x += .5f;
+		e->cam_pos.x += 0.5f;
 
 	if (glfwGetKey(e->win, GLFW_KEY_D) == GLFW_PRESS ? 1 : 0)
-		e->cam_pos.x -= .5f;
+		e->cam_pos.x -= 0.5f;
 
 	if (glfwGetKey(e->win, GLFW_KEY_R) == GLFW_PRESS ? 1 : 0)
-		e->cam_pos.y += .5f;
+		e->cam_pos.y += 0.5f;
 
 	if (glfwGetKey(e->win, GLFW_KEY_F) == GLFW_PRESS ? 1 : 0)
-		e->cam_pos.y -= .5f;
+		e->cam_pos.y -= 0.5f;
 
 
 	if (glfwGetKey(e->win, GLFW_KEY_LEFT) == GLFW_PRESS ? 1 : 0)
@@ -51,7 +51,7 @@ void	key_handle(t_app *e)
 	}
 }
 
-void	_init(t_app *e)
+void	mainit(t_app *e)
 {
 	e->cam_pos 		= (t_vec3f){0, 0, 0};
 	e->cam_rot 		= (t_vec3f){0, 0, 0};
@@ -72,6 +72,7 @@ void	_init(t_app *e)
 	glfwSwapInterval(1);
 }
 
+/*
 #include <windows.h>
 
 #include <imagehlp.h>
@@ -153,6 +154,7 @@ void set_signal_handler()
     SetUnhandledExceptionFilter(windows_exception_handler);
 }
 
+*/
 void	ogl_options()
 {
 	//glCullFace(GL_BACK);
@@ -167,11 +169,11 @@ int main(int argv, char *argc[])
 	t_app		*e;
 	(void)argc;
 	e = malloc(sizeof(t_app));
-	set_signal_handler();
-	e->nb_data = 8;
-	open_file(e, "Ressources/Eagle1.obj");
+	//set_signal_handler();
+	e->nb_data = 10;
+	open_file(e, argc[1]);
 	printf("\n> %d\n> %d\n", e->nb_indexes, e->nb_vertices);
-	_init(e);
+	mainit(e);
 	if (gl3wInit())
 	{
 	    fprintf(stderr, "failed to initialize OpenGL\n");
@@ -222,9 +224,9 @@ int main(int argv, char *argc[])
 
 		mat4_rotate(mat_rot, e->cam_rot);
 		mat4_translate(mat_trans, e->cam_pos);
-		//mat4_scale(mat_scale, (t_vec3f){5, 5, 5});
+		mat4_scale(mat_scale, (t_vec3f){10, 10, 10});
 		mat4_mult(mat4_model, mat_rot, mat_trans);
-		//mat4_mult(mat4_model, mat4_model, mat_scale);
+		mat4_mult(mat4_model, mat4_model, mat_scale);
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, mat4_model[0]);
 
@@ -235,7 +237,11 @@ int main(int argv, char *argc[])
         glfwPollEvents();
 	}
 
+	free(e->indexes);
+	free(e->vertices);
+	free(e);
 
 
+	printf("%.16f\n", rgbfloat(255, 200, 155));
 	return (false);
 }

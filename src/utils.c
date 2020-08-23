@@ -71,3 +71,12 @@ char		*strafterocc(char *line, char c)
 			return (line + i + 1);
 	return (NULL);
 }
+
+float		rgbfloat(float r, float g, float b) 
+{
+	float re = (float)((r) + ((g) / 256.0) + ( (b) / (256.0 * 256.0)));
+
+	float ar = 65536 * r + 256 * g + b;
+
+	return (ar);
+}

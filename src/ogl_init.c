@@ -16,6 +16,8 @@ void	ogl_attrib(t_app *e)
    	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
    	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
 	   	e->nb_data * sizeof(float), (void *)0);
 	ogl_geterror();
@@ -24,6 +26,12 @@ void	ogl_attrib(t_app *e)
 	ogl_geterror();
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
 		e->nb_data * sizeof(float), (void *)(6 * sizeof(float)));
+	ogl_geterror();
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE,
+		e->nb_data * sizeof(float), (void *)(8 * sizeof(float)));
+	ogl_geterror();
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE,
+		e->nb_data * sizeof(float), (void *)(9 * sizeof(float)));
 	ogl_geterror();
    	glBindBuffer(GL_ARRAY_BUFFER, 0); 
     glBindVertexArray(0); 

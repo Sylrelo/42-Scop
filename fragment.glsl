@@ -2,10 +2,20 @@
 
 out vec4 FragColor;
 
-varying vec3 vertexColor;
+in vec3 vertexColor;
 
 in vec3 outNormal;
 in vec3 outPosition;
+in float outColor;
+
+vec3 floatToRgb(float v) {
+
+   float r = (v / (256 * 256)) / 256.0;
+   float g = mod(v / 256, 256) / 256.0;
+   float b = mod(v, 256.0) / 256.0;
+   return vec3(r, g, b);
+}
+
 
 void main()
 {
