@@ -13,6 +13,7 @@ void	ogl_geterror()
 
 void	ogl_attrib(t_app *e)
 {
+	/*
    	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -35,10 +36,12 @@ void	ogl_attrib(t_app *e)
 	ogl_geterror();
    	glBindBuffer(GL_ARRAY_BUFFER, 0); 
     glBindVertexArray(0); 
+	*/
 }
 
 void	ogl_init_buffers(t_app *e)
 {
+	/*
 	glGenVertexArrays(1, &e->ogl.vao);
 	ogl_geterror();
 	glGenBuffers(1, &e->ogl.vbo);
@@ -57,4 +60,5 @@ void	ogl_init_buffers(t_app *e)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 
 		sizeof(unsigned int) * (e->nb_indexes), e->indexes, GL_STATIC_DRAW);
 	ogl_geterror();
+	*/
 }

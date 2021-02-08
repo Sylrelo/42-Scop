@@ -50,26 +50,42 @@ void		mat4_empty(mat4f mat)
 	}
 }
 
-void		mat4_mult(mat4f result, mat4f a, mat4f b)
+
+void 	mat4_mult(mat4f res, mat4f a, mat4f b)
+{
+	int i, j, k; 
+    for (i = 0; i < 4; i++) 
+    { 
+        for (j = 0; j < 4; j++) 
+        { 
+            res[i][j] = 0; 
+            for (k = 0; k < 4; k++) 
+                res[i][j] += a[i][k] * b[k][j]; 
+        } 
+    } 
+}
+void	matmat(mat4f res, t_vec3f t, t_vec3f r, t_vec3f center, int scale)
+{
+	mat4f	tt;
+	mat4f	tr;
+	mat4f	ts;
+	mat4f	tmp;
+
+	mat4_rotate_around(tr, vec_multf(center, scale), r);
+	mat4_scale(ts, (t_vec3f){scale, scale, scale});
+	mat4_translate(tt, t);
+	mat4_mult(tmp, ts, tr);
+	mat4_mult(res, tmp, tt);
+}
+
+void	printmat(mat4f mat)
 {
 	int			i;
-	int			j;
-	int			k;
-	mat4f		cpa;
-	mat4f		cpb;
-
-	mat4_cpy(cpa, a);
-	mat4_cpy(cpb, b);
-	mat4_empty(result);
 	i = -1;
 	while (++i < 4)
 	{
-		j = -1;
-		while (++j < 4)
-		{
-			k = -1;
-			while (++k < 4)
-				result[i][j] += cpa[i][k] * cpb[k][j];
-		}
+		printf("%.2f %.2f %.2f %.2f\n", mat[i][0], mat[i][1], mat[i][2], mat[i][3]);
 	}
+	printf("\n");
+
 }

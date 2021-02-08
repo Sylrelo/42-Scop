@@ -55,3 +55,17 @@ void		mat4_perspective(mat4f result, float fov, float aspect, float near_plane, 
 	result[2][3] = -1.0f;
 	result[3][2] = (2.0f * far_plane * near_plane) / (far_plane - near_plane) * -1;
 }
+
+void		mat4_rotate_around(mat4f result, t_vec3f center, t_vec3f rot)
+{
+	mat4f	trans;
+	mat4f	trans_back;
+	mat4f	rotation;
+	mat4f	tmp;
+
+	mat4_translate(trans, vec_multf(center, -1));
+	mat4_rotate(rotation, rot);
+	mat4_translate(trans_back, center);
+	mat4_mult(tmp, trans, rotation);
+	mat4_mult(result, tmp, trans_back);
+}

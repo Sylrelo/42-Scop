@@ -1,6 +1,22 @@
 #include "scop.h"
 
-void	obj_parse_push_data(t_app *e, t_obj *obj, t_3i index)
+void	store_minmax(t_app *e, t_vec3f pt)
+{
+	if (e->min.x > pt.x)
+		e->min.x = pt.x;
+	if (e->min.y > pt.y)
+		e->min.y = pt.y;
+	if (e->min.z > pt.z)
+		e->min.z = pt.z;
+	if (e->max.x < pt.x)
+		e->max.x = pt.x;
+	if (e->max.y < pt.y)
+		e->max.y = pt.y;
+	if (e->max.z < pt.z)
+		e->max.z = pt.z;
+}
+
+void	obj_parse_push_data(t_app *e, t_obj *obj, t_3i index, t_fdata *data)
 {
 	t_vec3f		value_v;
 	t_vec3f		value_vn;
@@ -15,26 +31,17 @@ void	obj_parse_push_data(t_app *e, t_obj *obj, t_3i index)
 		value_vt = obj->texture_coords[index.b - 1];
 	if (index.c != -1 && index.c - 1 < obj->nb_normals)
 		value_vn = obj->normals[index.c - 1];
-	e->vertices[(e->nb_vertices++)] = value_v.x;
-	e->vertices[(e->nb_vertices++)] = value_v.y;
-	e->vertices[(e->nb_vertices++)] = value_v.z;
-	e->vertices[(e->nb_vertices++)] = value_vn.x;
-	e->vertices[(e->nb_vertices++)] = value_vn.y;
-	e->vertices[(e->nb_vertices++)] = value_vn.z;
-	e->vertices[(e->nb_vertices++)] = value_vt.x;
-	e->vertices[(e->nb_vertices++)] = value_vt.y;
-
-
-	srand(e->nb_vertices);
-	e->vertices[(e->nb_vertices++)] = rgbfloat(rand() % 255, rand() % 255, rand() % 255);
-	e->vertices[(e->nb_vertices++)] = 0;
-
-	/*e->vertices[(e->nb_vertices++)] = 0;
-	e->vertices[(e->nb_vertices++)] = 155	;
-	e->vertices[(e->nb_vertices++)] = 255;
-	e->vertices[(e->nb_vertices++)] = 255;
-	*/
-	//e->vertices|(e->nb_vertices++)] = (texture_id & 0xFF << 16) | (face_type & 0xFF << 8);
+	store_minmax(e, value_v);
+    data->pos[0 + data->idx] = value_v.x;
+    data->pos[1 + data->idx] = value_v.y;
+    data->pos[2 + data->idx] = value_v.z;
+    data->pos[3 + data->idx] = value_vn.x;
+    data->pos[4 + data->idx] = value_vn.y;
+    data->pos[5 + data->idx] = value_vn.z;
+    //data->pos[6 + data->idx] = value_vt.x;
+    //data->pos[7 + data->idx] = value_vt.y;
+    //e->nb_poly++;
+    data->idx += 6;
 }
 
 t_3i	obj_parse_handle_face(char *line)
@@ -54,64 +61,65 @@ t_3i	obj_parse_handle_face(char *line)
 	return (value);
 }
 
-void	obj_push_indexes(t_app *e)
+typedef struct s_face_data
 {
-	int		i;
+	float		rgb;
+	float		face_type;
+	float		face_textureid;
+}				t_face_data;
 
-	i = -1;
-	while (++i < 3)
-	{	
-		e->indexes[e->nb_indexes] = e->nb_indexes;
-		e->nb_indexes++;
-	}
-}
-
-void	obj_parse_face_triangulate(t_app *e, t_obj *obj, int count, char *line)
+void	obj_parse_face_triangulate(t_app *e, t_obj *obj, char *line, int index)
 {
+	const int		count = chrcount(line, ' ') + 1;
+	const uint8_t	f_type = face_type(line);
 	char		*token;
 	t_3i		*data;
 	int			i;
-	int			base_index;
+	t_fdata     data0;
 
-	base_index = 0;
-	i = 0;
+	i = -1;
 	if (!(data = calloc(count, sizeof(t_3i))))
-		return ;
+		exit (1);
 	token = strtok(line, " ");
-	while(token != NULL && i < count)
+	while(token != NULL && ++i < count)
 	{
 		data[i] = obj_parse_handle_face(token);
-		i++;
 		token = strtok(NULL, " ");
 	}
-	i = -1;
-	while (++i < count - 2)
-	{
-		obj_parse_push_data(e, obj, data[0]);
-		obj_parse_push_data(e, obj, data[i + 1]);
-		obj_parse_push_data(e, obj, data[i + 2]);
-		obj_push_indexes(e);
-	}
-	free(data);
+    i = -1;
+    while (++i < count - 2)
+    {
+        data0.idx = 0;
+        obj_parse_push_data(e, obj, data[0], &data0);
+        obj_parse_push_data(e, obj, data[i + 1], &data0);
+        obj_parse_push_data(e, obj, data[i + 2], &data0);
+        addTriangle(e, data0.pos, f_type);
+		e->draw_buffer[index].count++;
+    }
+    free(data);
 }
 
-void	obj_parse_face(t_app *e, t_obj *obj, char *line)
+void	obj_parse_face(t_app *e, t_obj *obj, char *line, int index)
 {
-	const int	v_count = chrcount(line, ' ') + 1;
+	const int		v_count = chrcount(line, ' ') + 1;
+	const uint8_t	f_type = face_type(line);
+    t_fdata     data;
 	char		*token;
 	t_3i		tmp;
 
 	if (v_count > 3)
 	{
-		obj_parse_face_triangulate(e, obj, v_count, line);
-		return ;
+		obj_parse_face_triangulate(e, obj, line, index);
+	        return;
 	}
 	token = strtok(line, " ");
+    data.idx = 0;
 	while(token != NULL)
 	{
 		tmp = obj_parse_handle_face(token);
-		obj_parse_push_data(e, obj, tmp);
+		obj_parse_push_data(e, obj, tmp, &data);
 		token = strtok(NULL, " ");
 	}
-	obj_push_indexes(e);
+    addTriangle(e, data.pos, f_type);
+	e->draw_buffer[index].count++;
 }

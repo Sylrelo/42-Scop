@@ -35,13 +35,14 @@ char *load_glsl_file(char *file, int *size)
 int load_shader(char *file, unsigned int type)
 {
 	int			len;
-	const char	*source = load_glsl_file(file, &len);
+	char		*source;
 	int			shader;
 	int			success;
 	char		log[512];
 
+	source = load_glsl_file(file, &len);
 	shader = glCreateShader(type);
-	glShaderSource(shader, 1, &source, NULL);
+	glShaderSource(shader, 1, (const GLchar * const*)&source, NULL);
 	glCompileShader(shader);
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success)
